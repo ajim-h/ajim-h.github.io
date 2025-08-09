@@ -1,19 +1,76 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Portfolio</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#ffffff" />
+  <!-- Meta tags populated by JS from content.json -->
+  <meta name="description" content="Personal site" id="meta-description" />
+  <meta property="og:title" content="Profile" id="og-title" />
+  <meta property="og:description" content="Profile" id="og-desc" />
+  <meta property="og:image" content="assets/profile.svg" id="og-image" />
+
+  <title id="page-title">Profile</title>
+
+  <!-- Google Font (single external request allowed) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css" />
+
+  <noscript>
+    <style>
+      .no-js-banner{background:#fff4f4;color:#7a1212;padding:.6rem;border-radius:.4rem;margin:1rem}
+    </style>
+    <div class="no-js-banner">JavaScript is disabled. This site requires JavaScript to render dynamic content. You can still view a simple fallback content if available.</div>
+  </noscript>
 </head>
 <body>
-  <header>
-    <nav id="navbar"></nav>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+      <div class="brand" id="brand" aria-live="polite">
+        <!-- Injected by JS from content.json -->
+      </div>
+
+      <button id="nav-toggle" class="nav-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">
+        <svg class="icon-burger" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+          <path class="bar bar1" d="M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path class="bar bar2" d="M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path class="bar bar3" d="M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <nav id="site-nav" class="site-nav" role="navigation" aria-label="Primary">
+        <!-- Nav links built by JS -->
+      </nav>
+    </div>
   </header>
-  <main id="content"></main>
-  <footer>
-    <p>© 2025 My Portfolio</p>
+
+  <main id="main" class="main-content" role="main" tabindex="-1">
+    <div id="content-root" class="content-root" aria-live="polite"></div>
+
+    <!-- fallback if JSON fetch fails (used by JS) -->
+    <template id="fallback-template">
+      <article class="fallback card">
+        <h1>Resume</h1>
+        <p>Site content failed to load. Please ensure <code>content.json</code> exists and is valid JSON.</p>
+      </article>
+    </template>
+  </main>
+
+  <footer class="site-footer" role="contentinfo" id="site-footer">
+    <div class="footer-inner" id="footer-inner">
+      <!-- injected by JS -->
+    </div>
   </footer>
-  <script src="scripts.js"></script>
+
+  <!-- Floating controls: print/resume -->
+  <div class="print-controls" aria-hidden="false">
+    <button id="print-btn" class="btn-primary" title="Open printer friendly resume view">Print / Resume</button>
+    <label class="print-only-toggle"><input id="print-only" type="checkbox"> Print-layout only</label>
+  </div>
+
+  <script src="scripts.js" defer></script>
 </body>
 </html>
