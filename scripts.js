@@ -1,485 +1,342 @@
 /**
  * scripts.js
- * - Fetches content.json and renders the entire site.
- * - All visible content is read from content.json (single source of truth).
- * - Adds professional micro-interactions:
- * • Hamburger -> X animation
- * • Nav underline slide
- * • Section fade-in on scroll (IntersectionObserver)
- * • Projects search & highlight
- * • Accessible expand/collapse for Research and Projects
- * • Button hover micro-interactions
- * - Graceful degradation: if fetch fails, fallback content is shown.
+ * - Single JS file shared across all pages.
+ * - Loads content.json, builds nav, renders page-specific content.
+ * - Provides micro-interactions: fade-in (IntersectionObserver), collapsible details, projects search/filter, hamburger toggle, print.
+ * - All visible content is in content.json (no HTML change needed).
  *
- * Where to edit behavior:
- * - CONTENT_PATH constant
- * - IntersectionObserver options (rootMargin / threshold)
- * - Search debounce duration in debounce()
- *
- * NOTE: Keep all content edits inside content.json only.
+ * Edit behavior:
+ * - CONTENT_PATH: where to fetch content (default 'content.json')
+ * - The code detects the page via document.body.dataset.page
  */
 
 const CONTENT_PATH = 'content.json';
+const body = document.body;
+const page = body.dataset.page || 'home'; // expected: home, education, research, projects, testscores, hobbies, contact
 const root = document.getElementById('content-root');
 const nav = document.getElementById('site-nav');
 const brand = document.getElementById('brand');
-const footerInner = document.getElementById('footer-inner');
-const pageTitle = document.getElementById('page-title');
-const metaDesc = document.getElementById('meta-description');
-const ogTitle = document.getElementById('og-title');
-const ogDesc = document.getElementById('og-desc');
-const ogImage = document.getElementById('og-image');
+const footer = document.getElementById('site-footer');
 
-const fallbackTemplate = document.getElementById('fallback-template');
+function escapeHtml(s=''){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 
-const supportsIntersection = 'IntersectionObserver' in window;
-
-/* -------------------------
-    Utility helpers
-    ------------------------- */
-function escapeHtml(str = '') {
-  return String(str)
-    .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-}
-
-/* Safe highlight: escape then replace matches with <mark class="match">... */
-function highlightMatches(text, query) {
-  if (!query) return escapeHtml(text);
-  // escape query for regex
-  const safeQ = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`(${safeQ})`, 'ig');
-  // escape the full text, then replace escaped matches
-  const esc = escapeHtml(text);
-  // Now we need to highlight matches in a case-insensitive way.
-  // Because esc has &amp; etc, a simple replace on esc can still work as we matched raw query on original text.
-  // Safer approach: iterate through original text to find matches and build result.
-  let result = '';
-  let lastIndex = 0;
-  const original = String(text);
-  let m;
-  while ((m = re.exec(original)) !== null) {
-    const start = m.index;
-    const end = re.lastIndex;
-    result += escapeHtml(original.slice(lastIndex, start));
-    result += `<mark class="match">${escapeHtml(original.slice(start, end))}</mark>`;
-    lastIndex = end;
-    if (re.lastIndex === m.index) re.lastIndex++; // avoid zero-length match infinite loop
-  }
-  result += escapeHtml(original.slice(lastIndex));
-  return result;
-}
-
-/* debounce helper */
-function debounce(fn, wait = 180) {
-  let t;
-  return (...args) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), wait);
-  };
-}
-
-/* -------------------------
-    Fetch content.json and render
-    ------------------------- */
-async function loadContent() {
+async function loadJSON(){
   try {
     const res = await fetch(CONTENT_PATH + '?v=' + Date.now());
-    if (!res.ok) throw new Error('Failed to fetch content.json: ' + res.status);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     renderAll(data);
-  } catch (err) {
-    console.error(err);
+  } catch(err){
+    console.error('Error loading content.json:', err);
     showFallback(err);
   }
 }
 
-/* show fallback markup if JSON fetch fails */
-function showFallback(err) {
+function showFallback(err){
   root.innerHTML = '';
-  const clone = fallbackTemplate.content.cloneNode(true);
-  root.appendChild(clone);
-  pageTitle.textContent = 'Profile';
+  const fallback = document.createElement('div');
+  fallback.className = 'card';
+  fallback.innerHTML = `<h2>Site content failed to load</h2>
+    <p>Please ensure <code>content.json</code> exists in the site root and is valid JSON. Open the browser console for details.</p>`;
+  root.appendChild(fallback);
   brand.innerHTML = `<div class="logo" style="background-image:url('assets/logo.svg')" role="img" aria-label="Logo"></div>
-                     <div><div class="title">Your Name</div><div class="subtitle">Edit content.json</div></div>`;
-  footerInner.textContent = '';
-  console.warn('Displayed fallback due to error:', err);
+    <div><div class="title">Your Name</div><div class="subtitle">Edit content.json</div></div>`;
+  footer.innerHTML = `<div></div>`;
 }
 
-/* -------------------------
-    Render helpers
-    ------------------------- */
-function setMeta(data) {
-  const title = data.site?.title || 'Profile';
-  const desc = data.site?.description || '';
-  const image = data.site?.image || 'assets/profile.svg';
-
-  pageTitle.textContent = title;
-  metaDesc.content = desc;
-  ogTitle.content = title;
-  ogDesc.content = desc;
-  ogImage.content = image;
-}
-
-function buildBrand(site) {
-  const logo = site?.logo || 'assets/logo.svg';
-  const title = site?.title || 'Your Name';
-  const subtitle = site?.subtitle || '';
+/* Build brand and nav */
+function buildBrand(site){
+  const logo = site.logo || 'assets/logo.svg';
+  const title = site.title || 'Your Name';
+  const subtitle = site.subtitle || '';
   brand.innerHTML = `
-    <div class="logo" style="background-image:url('${logo}')" role="img" aria-label="Logo"></div>
-    <div>
-      <div class="title">${escapeHtml(title)}</div>
-      <div class="subtitle">${escapeHtml(subtitle)}</div>
-    </div>`;
+    <div class="logo" style="background-image:url('${escapeHtml(logo)}')" role="img" aria-label="Logo"></div>
+    <div><div class="title">${escapeHtml(title)}</div><div class="subtitle">${escapeHtml(subtitle)}</div></div>
+  `;
+  document.getElementById('page-title').textContent = title;
+  document.getElementById('meta-description').content = site.description || '';
 }
 
-/* Build nav links; order controlled by site.navOrder array in content.json */
-function buildNav(site, sections) {
+/* Build nav from site.navOrder or default */
+function buildNav(site, sections){
   nav.innerHTML = '';
-  const container = document.createElement('div');
-  container.className = 'nav-list';
-  const order = site?.navOrder || Object.keys(sections || {});
-  order.forEach(slug => {
-    if (!sections[slug]) return;
-    const title = sections[slug].meta?.title || slug;
+  const ul = document.createElement('div'); ul.className = 'nav-list';
+  const order = Array.isArray(site.navOrder) ? site.navOrder : Object.keys(sections || {});
+  order.forEach(key => {
+    if(!sections[key]) return;
+    const title = sections[key].meta?.title || key;
     const a = document.createElement('a');
-    a.href = `#${slug}`;
+    // map page slug to filename
+    const filename = pageToFilename(key);
+    a.href = filename;
     a.textContent = title;
     a.addEventListener('click', () => {
-      // close mobile nav
-      document.getElementById('nav-toggle').setAttribute('aria-expanded','false');
+      document.getElementById('nav-toggle')?.setAttribute('aria-expanded','false');
       nav.classList.remove('open');
     });
-    container.appendChild(a);
+    ul.appendChild(a);
   });
-  nav.appendChild(container);
+  nav.appendChild(ul);
 }
 
-/* Accessible toggle button generation */
-function createToggleButton(idSuffix, label = 'Details', expanded = false) {
+/* map section key to page filename */
+function pageToFilename(key){
+  // home -> index.html, education -> education.html, etc.
+  if(key === 'home') return 'index.html';
+  return `${key}.html`;
+}
+
+/* Render page-specific content */
+function renderAll(data){
+  buildBrand(data.site || {});
+  buildNav(data.site || {}, data.sections || {});
+  footer.innerHTML = `<div>${escapeHtml(data.site?.title || '')} · ${escapeHtml(data.site?.tagline || '')}</div><div>${escapeHtml(data.site?.copyright || '')}</div>`;
+
+  const sections = data.sections || {};
+  const cur = sections[page];
+  if(!cur){
+    root.innerHTML = `<div class="card"><h2>Page not found in content.json</h2><p>Check content.json has a "${page}" key.</p></div>`;
+    return;
+  }
+
+  // choose renderer based on page
+  switch(page){
+    case 'home': renderHome(cur); break;
+    case 'education': renderEducation(cur); break;
+    case 'research': renderResearch(cur); break;
+    case 'projects': renderProjects(cur); break;
+    case 'testscores': renderTestScores(cur); break;
+    case 'hobbies': renderHobbies(cur); break;
+    case 'contact': renderContact(cur); break;
+    default: root.textContent = 'Unknown page'; 
+  }
+
+  // micro interactions
+  setupNavToggle();
+  setupPrint();
+  setupScrollAnimations();
+}
+
+/* Renderers for each page (all content from content.json) */
+function renderHome(obj){
+  root.innerHTML = '';
+  const section = document.createElement('section');
+  section.className = 'card';
+  const heroImg = obj.heroImage ? `<img src="${escapeHtml(obj.heroImage)}" alt="${escapeHtml(obj.heroAlt||'Hero')}" style="max-width:220px;float:right;margin-left:12px;border-radius:8px">` : '';
+  section.innerHTML = `<div><h2>${escapeHtml(obj.title||'Welcome')}</h2><p class="section-intro">${escapeHtml(obj.intro||'')}</p>${heroImg}</div>`;
+  root.appendChild(section);
+}
+
+function renderEducation(obj){
+  root.innerHTML = '';
+  const section = document.createElement('section');
+  section.innerHTML = `<div class="section-title"><h2>${escapeHtml(obj.meta?.title||'Education')}</h2></div>`;
+  const list = document.createElement('div');
+  (obj.items || []).forEach(ed => {
+    const card = document.createElement('div'); card.className = 'card';
+    card.innerHTML = `<strong>${escapeHtml(ed.degree)} — ${escapeHtml(ed.institution)}</strong>
+      <div class="muted">${escapeHtml(ed.years || ed.period || '')}</div>
+      <div>${escapeHtml(ed.details || '')}</div>`;
+    list.appendChild(card);
+  });
+  section.appendChild(list);
+  root.appendChild(section);
+}
+
+function renderResearch(obj){
+  root.innerHTML = '';
+  const section = document.createElement('section');
+  section.innerHTML = `<div class="section-title"><h2>${escapeHtml(obj.meta?.title||'Research')}</h2></div>`;
+  const list = document.createElement('div');
+  (obj.items || []).forEach((r, idx) => {
+    const card = document.createElement('div'); card.className = 'card collapsible';
+    card.innerHTML = `<strong>${escapeHtml(r.title)}</strong><div class="muted">${escapeHtml(r.year || r.period || '')}</div>`;
+    const {btn, id} = createToggle(`research-${idx}`, 'Details');
+    const details = document.createElement('div'); details.className='collapsible-content'; details.id = id; details.style.maxHeight='0';
+    details.innerHTML = `<div style="padding-top:8px">${escapeHtml(r.description || r.summary || '')}</div>`;
+    if(r.link) details.innerHTML += `<div style="margin-top:8px"><a href="${escapeHtml(r.link)}" target="_blank" rel="noopener">Read more</a></div>`;
+    btn.addEventListener('click', () => toggleCollapse(details, btn));
+    card.appendChild(btn);
+    card.appendChild(details);
+    list.appendChild(card);
+  });
+  section.appendChild(list);
+  root.appendChild(section);
+}
+
+function renderProjects(obj){
+  root.innerHTML = '';
+  const section = document.createElement('section');
+  section.innerHTML = `<div class="section-title"><h2>${escapeHtml(obj.meta?.title||'Projects')}</h2></div>`;
+  const controls = document.createElement('div'); controls.className='controls';
+  controls.innerHTML = `<input id="project-search" type="search" placeholder="Search projects...">`;
+  section.appendChild(controls);
+
+  const grid = document.createElement('div'); grid.className='projects-grid'; grid.id='projects-grid';
+  section.appendChild(grid);
+  root.appendChild(section);
+
+  const items = obj.items || [];
+  function renderGrid(list, q=''){
+    grid.innerHTML='';
+    if(list.length===0){ grid.innerHTML = `<div class="card">No projects found.</div>`; return; }
+    list.forEach((p, idx) => {
+      const item = document.createElement('div'); item.className='project-item collapsible';
+      const snippet = (p.description||'').split('.').slice(0,1).join('.') + (p.description?'.':'');
+      item.innerHTML = `<strong>${escapeHtml(p.title)}</strong><div class="muted">${escapeHtml(p.subtitle||'')}</div><p>${escapeHtml(snippet)}</p>`;
+      if(p.image) item.innerHTML += `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.imageAlt||p.title)}" style="max-width:100%;border-radius:6px">`;
+      const {btn, id} = createToggle(`project-${idx}`, 'More');
+      const details = document.createElement('div'); details.className='collapsible-content'; details.id = id; details.style.maxHeight='0';
+      details.innerHTML = `<div style="padding-top:8px">${escapeHtml(p.description||'')}</div>
+        <div class="project-tags">${(p.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`;
+      if(p.link) details.innerHTML += `<div style="margin-top:8px"><a href="${escapeHtml(p.link)}" target="_blank" rel="noopener">View</a></div>`;
+      btn.addEventListener('click', ()=>toggleCollapse(details, btn));
+      item.appendChild(btn);
+      item.appendChild(details);
+      grid.appendChild(item);
+    });
+  }
+  renderGrid(items);
+
+  const search = document.getElementById('project-search');
+  search.addEventListener('input', debounce(e=>{
+    const q = e.target.value.trim().toLowerCase();
+    const filtered = items.filter(p=>{
+      const hay = (p.title+' '+(p.description||'')+' '+(p.tags||[]).join(' ')).toLowerCase();
+      return hay.includes(q);
+    });
+    renderGrid(filtered, q);
+  }, 160));
+}
+
+function renderTestScores(obj){
+  root.innerHTML='';
+  const section = document.createElement('section');
+  section.innerHTML = `<div class="section-title"><h2>${escapeHtml(obj.meta?.title||'Test scores')}</h2></div>`;
+  const card = document.createElement('div'); card.className='card';
+  card.innerHTML = (obj.list || []).map(s=>`<div><strong>${escapeHtml(s.test)}</strong> — ${escapeHtml(s.score)} ${escapeHtml(s.year?('('+s.year+')'):'')}</div>`).join('');
+  section.appendChild(card);
+  root.appendChild(section);
+}
+
+function renderHobbies(obj){
+  root.innerHTML='';
+  const section = document.createElement('section');
+  section.innerHTML = `<div class="section-title"><h2>${escapeHtml(obj.meta?.title||'Hobbies')}</h2></div>`;
+  const row = document.createElement('div'); row.className='row';
+  (obj.items || []).forEach(h=>{
+    const c = document.createElement('div'); c.className='card col';
+    c.innerHTML = `<strong>${escapeHtml(h.name)}</strong><div class="muted">${escapeHtml(h.description||'')}</div>`;
+    if(h.image) c.innerHTML += `<img src="${escapeHtml(h.image)}" alt="${escapeHtml(h.name)}" style="max-width:160px;margin-top:8px;border-radius:8px">`;
+    row.appendChild(c);
+  });
+  section.appendChild(row);
+  root.appendChild(section);
+}
+
+function renderContact(obj){
+  root.innerHTML='';
+  const section = document.createElement('section');
+  section.innerHTML = `<div class="section-title"><h2>${escapeHtml(obj.meta?.title||'Contact')}</h2></div>`;
+  const card = document.createElement('div'); card.className='card';
+  let html = '';
+  if(obj.email) html += `<div>Email: <a href="mailto:${escapeHtml(obj.email)}">${escapeHtml(obj.email)}</a></div>`;
+  if(obj.phone) html += `<div>Phone: ${escapeHtml(obj.phone)}</div>`;
+  if(obj.social && obj.social.length){
+    html += `<div class="contact-links">Social: ${obj.social.map(s=>`<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.platform)}</a>`).join(' · ')}</div>`;
+  }
+  // Optional static contact form via Formspree
+  if(obj.form?.enabled){
+    html += `<form method="POST" action="${escapeHtml(obj.form.action)}" class="contact-form" style="margin-top:12px">
+      <label>Name <input name="name" required></label><br>
+      <label>Email <input type="email" name="email" required></label><br>
+      <label>Message <textarea name="message" rows="4" required></textarea></label><br>
+      <button type="submit" class="btn-primary">Send</button>
+    </form>`;
+  }
+  card.innerHTML = html;
+  section.appendChild(card);
+  root.appendChild(section);
+}
+
+/* Utility: create toggle button with unique id */
+function createToggle(suffix, label='Details'){
   const btn = document.createElement('button');
   btn.className = 'toggle-btn';
   btn.type = 'button';
-  const uid = `toggle-${idSuffix}-${Math.random().toString(16).slice(2,8)}`;
-  btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-  btn.setAttribute('aria-controls', uid);
+  const id = `toggle-${suffix}-${Math.random().toString(16).slice(2,8)}`;
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-controls', id);
   btn.textContent = label;
-  btn.dataset.targetId = uid;
-  return { btn, uid };
+  return {btn, id};
 }
 
-/* Smooth collapse/expand using max-height */
-function openCollapse(el) {
-  if (!el) return;
-  el.classList.add('is-open');
-  const natural = el.scrollHeight + 12; // small padding
-  el.style.maxHeight = natural + 'px';
-  el.style.opacity = '1';
-  el.addEventListener('transitionend', function once() {
-    // allow natural height after expansion
-    el.style.maxHeight = 'none';
-    el.removeEventListener('transitionend', once);
-  });
-}
-
-function closeCollapse(el) {
-  if (!el) return;
-  // set explicit height then to 0
-  el.style.maxHeight = el.scrollHeight + 'px';
-  // force reflow
-  // eslint-disable-next-line no-unused-expressions
-  el.offsetHeight;
-  el.style.maxHeight = '0';
-  el.style.opacity = '0';
-  el.classList.remove('is-open');
-}
-
-/* -------------------------
-    Render each section
-    ------------------------- */
-function renderSection(key, obj, globalQuery = '') {
-  const section = document.createElement('section');
-  section.id = key;
-  section.tabIndex = -1;
-  section.className = 'content-section';
-  const titleText = obj.meta?.title || key;
-  const header = document.createElement('div');
-  header.className = 'section-title';
-  header.innerHTML = `<h2>${escapeHtml(titleText)}</h2>`;
-  section.appendChild(header);
-
-  const body = document.createElement('div');
-  body.className = 'section-body';
-
-  switch (key) {
-    case 'home':
-      {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `<p>${escapeHtml(obj.intro || '')}</p>`;
-        if (obj.image) {
-          const img = document.createElement('img');
-          img.src = obj.image;
-          img.alt = obj.imageAlt || (obj.meta?.title || 'profile picture');
-          img.style.maxWidth = '140px';
-          img.style.float = 'right';
-          img.style.marginLeft = '12px';
-          card.appendChild(img);
-        }
-        body.appendChild(card);
-      }
-      break;
-
-    case 'education':
-      {
-        const container = document.createElement('div');
-        (obj.items || []).forEach(e => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `<strong>${escapeHtml(e.degree)} — ${escapeHtml(e.institution)}</strong>
-                            <div class="muted">${escapeHtml(e.period)}</div>
-                            <div>${escapeHtml(e.details)}</div>`;
-          container.appendChild(card);
-        });
-        body.appendChild(container);
-      }
-      break;
-
-    case 'research':
-      {
-        const list = document.createElement('div');
-        list.className = 'research-list';
-        (obj.items || []).forEach((r, idx) => {
-          const card = document.createElement('div');
-          card.className = 'card collapsible';
-          const summaryHtml = `<strong>${escapeHtml(r.title)}</strong>
-                               <div class="muted">${escapeHtml(r.role || '')} ${escapeHtml(r.period || '')}</div>`;
-          card.innerHTML = summaryHtml;
-          const { btn, uid } = createToggleButton(`research-${idx}`, 'Details', false);
-          const details = document.createElement('div');
-          details.className = 'collapsible-content';
-          details.id = uid;
-          details.style.maxHeight = '0';
-          details.style.opacity = '0';
-          details.innerHTML = `<div>${escapeHtml(r.summary || '')}</div>`;
-          if (r.link) {
-            details.innerHTML += `<div style="margin-top:8px"><a href="${r.link}" target="_blank" rel="noopener">Read more</a></div>`;
-          }
-          btn.addEventListener('click', () => {
-            const isOpen = btn.getAttribute('aria-expanded') === 'true';
-            btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
-            if (isOpen) closeCollapse(details); else openCollapse(details);
-          });
-          card.appendChild(btn);
-          card.appendChild(details);
-          list.appendChild(card);
-        });
-        body.appendChild(list);
-      }
-      break;
-
-    case 'projects':
-      {
-        const controls = document.createElement('div');
-        controls.className = 'controls';
-        controls.innerHTML = `<input type="search" id="project-search" placeholder="Search projects by title, description or tag" aria-label="Search projects">`;
-        body.appendChild(controls);
-
-        const grid = document.createElement('div');
-        grid.className = 'projects-grid';
-        grid.id = 'projects-grid';
-        body.appendChild(grid);
-
-        // render helper
-        const renderGrid = (items, query = '') => {
-          grid.innerHTML = '';
-          if (!items.length) {
-            grid.innerHTML = `<div class="card">No projects found.</div>`;
-            return;
-          }
-          items.forEach((p, idx) => {
-            const item = document.createElement('div');
-            item.className = 'project-item collapsible';
-            const snippet = (p.description || '').split('.').slice(0,1).join('.') + (p.description ? '.' : '');
-            item.innerHTML = `<strong>${highlightMatches(p.title || '', query)}</strong>
-                              <div class="muted">${highlightMatches(p.subtitle || '', query)}</div>
-                              <p>${highlightMatches(snippet, query)}</p>`;
-            if (p.image) {
-              item.innerHTML += `<img src="${p.image}" alt="${escapeHtml(p.imageAlt || p.title)}" style="max-width:100%;height:auto;border-radius:6px">`;
-            }
-            const { btn, uid } = createToggleButton(`project-${idx}`, 'More', false);
-            const details = document.createElement('div');
-            details.className = 'collapsible-content';
-            details.id = uid;
-            details.style.maxHeight = '0';
-            details.style.opacity = '0';
-            details.innerHTML = `<div>${highlightMatches(p.description || '', query)}</div><div class="project-tags">${(p.tags||[]).map(t => `<span class="tag">${highlightMatches(t, query)}</span>`).join('')}</div>`;
-            if (p.link) details.innerHTML += `<div style="margin-top:8px"><a href="${p.link}" target="_blank" rel="noopener">View</a></div>`;
-            btn.addEventListener('click', () => {
-              const isOpen = btn.getAttribute('aria-expanded') === 'true';
-              btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
-              if (isOpen) closeCollapse(details); else openCollapse(details);
-            });
-            item.appendChild(btn);
-            item.appendChild(details);
-            grid.appendChild(item);
-          });
-        };
-
-        // initial render with full list
-        renderGrid(obj.items || []);
-
-        // attach search with debounce
-        const search = controls.querySelector('#project-search');
-        const doFilter = (q) => {
-          const qtrim = String(q || '').trim().toLowerCase();
-          const filtered = (obj.items || []).filter(p => {
-            const hay = (p.title + ' ' + (p.description||'') + ' ' + (p.tags || []).join(' ')).toLowerCase();
-            return hay.includes(qtrim);
-          });
-          renderGrid(filtered, qtrim);
-        };
-        const deb = debounce((e) => doFilter(e.target.value), 160);
-        search.addEventListener('input', deb);
-      }
-      break;
-
-    case 'testscores':
-      {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = (obj.list || []).map(ts => `<div><strong>${escapeHtml(ts.test)}</strong> — ${escapeHtml(ts.score)}</div>`).join('');
-        body.appendChild(card);
-      }
-      break;
-
-    case 'travelling':
-      {
-        const row = document.createElement('div');
-        row.className = 'row';
-        (obj.places || []).forEach(p => {
-          const c = document.createElement('div');
-          c.className = 'card col';
-          c.innerHTML = `<strong>${escapeHtml(p.name)}</strong><div class="muted">${escapeHtml(p.year)}</div><div>${escapeHtml(p.notes)}</div>`;
-          row.appendChild(c);
-        });
-        body.appendChild(row);
-      }
-      break;
-
-    case 'miscellaneous':
-      {
-        const c = document.createElement('div');
-        c.className = 'card';
-        c.innerHTML = `<ul>${(obj.items || []).map(it => `<li>${escapeHtml(it)}</li>`).join('')}</ul>`;
-        body.appendChild(c);
-      }
-      break;
-
-    case 'contact':
-      {
-        const c = document.createElement('div');
-        c.className = 'card';
-        const mail = obj.email ? `<div>Email: <a href="mailto:${obj.email}">${escapeHtml(obj.email)}</a></div>` : '';
-        const socials = (obj.socials || []).map(s => `<a href="${s.url}" target="_blank" rel="noopener">${escapeHtml(s.label)}</a>`).join(' · ');
-        c.innerHTML = `${mail}<div class="contact-links">Social: ${socials}</div>`;
-
-        if (obj.form?.enabled) {
-          const form = document.createElement('form');
-          form.method = 'POST';
-          form.action = obj.form?.action || '#';
-          form.className = 'contact-form';
-          form.innerHTML = `
-            <label>Name <input name="name" required></label>
-            <label>Email <input type="email" name="email" required></label>
-            <label>Message <textarea name="message" rows="4" required></textarea></label>
-            <button type="submit" class="btn-primary">Send</button>
-          `;
-          c.appendChild(form);
-        }
-        body.appendChild(c);
-      }
-      break;
-
-    default:
-      {
-        const p = document.createElement('pre');
-        p.className = 'card';
-        p.textContent = JSON.stringify(obj, null, 2);
-        body.appendChild(p);
-      }
+/* Toggle collapse */
+function toggleCollapse(el, btn){
+  if(!el) return;
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+  if(expanded){
+    // close
+    el.style.maxHeight = el.scrollHeight + 'px';
+    // force reflow
+    void el.offsetHeight;
+    el.style.maxHeight = '0';
+    el.style.opacity = '0';
+    el.classList.remove('is-open');
+  } else {
+    el.classList.add('is-open');
+    const natural = el.scrollHeight + 12;
+    el.style.maxHeight = natural + 'px';
+    el.style.opacity = '1';
+    el.addEventListener('transitionend', function once(){
+      el.style.maxHeight = 'none';
+      el.removeEventListener('transitionend', once);
+    });
   }
-
-  section.appendChild(body);
-  return section;
 }
 
-/* -------------------------
-    Render all & wire interactions
-    ------------------------- */
-function renderAll(data) {
-  setMeta(data);
-  buildBrand(data.site || {});
-  const sections = data.sections || {};
-  buildNav(data.site || {}, sections);
-
-  root.innerHTML = '';
-  const order = data.site?.navOrder || Object.keys(sections);
-  order.forEach(key => {
-    if (!sections[key]) return;
-    const sec = renderSection(key, sections[key]);
-    root.appendChild(sec);
-  });
-
-  footerInner.innerHTML = `<div>${escapeHtml(data.site?.title || '')} · ${escapeHtml(data.site?.tagline || '')}</div><div>${escapeHtml(data.site?.copyright || '')}</div>`;
-
-  // Nav toggle behavior (hamburger -> X)
+/* Micro-interactions: nav toggle */
+function setupNavToggle(){
   const navToggle = document.getElementById('nav-toggle');
+  if(!navToggle) return;
   navToggle.addEventListener('click', () => {
-    const expanded = navToggle.getAttribute('aria-expanded') === 'true';
-    navToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+    const open = navToggle.getAttribute('aria-expanded') === 'true';
+    navToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
     nav.classList.toggle('open');
   });
+}
 
-  // IntersectionObserver for sections fade-in
-  if (supportsIntersection) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-          // optional: unobserve to save work
-          io.unobserve(entry.target);
-        }
-      });
-    }, { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
-
-    document.querySelectorAll('.content-section').forEach(sec => io.observe(sec));
-  } else {
-    // fallback: reveal all sections
-    document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('in-view'));
-  }
-
-  // Print button logic
+/* Print behavior */
+function setupPrint(){
   const printBtn = document.getElementById('print-btn');
   const printOnly = document.getElementById('print-only');
-  printBtn.addEventListener('click', () => {
-    if (printOnly.checked) document.documentElement.classList.add('print-only');
+  printBtn?.addEventListener('click', () => {
+    if(printOnly && printOnly.checked) document.documentElement.classList.add('print-only');
     window.print();
     document.documentElement.classList.remove('print-only');
   });
-
-  // keyboard: focus main after navigation (improves skip-to-content)
-  document.querySelectorAll('#site-nav a').forEach(a => {
-    a.addEventListener('click', () => {
-      const id = a.getAttribute('href')?.replace('#','');
-      const target = document.getElementById(id);
-      if (target) {
-        setTimeout(() => target.focus({preventScroll:false}), 50);
-      }
-    });
-  });
 }
 
-/* -------------------------
-    Start
-    ------------------------- */
-loadContent();
+/* IntersectionObserver for fade-in */
+function setupScrollAnimations(){
+  if('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => {
+        if(e.isIntersecting){
+          e.target.classList.add('in-view');
+          obs.unobserve(e.target);
+        }
+      });
+    }, {threshold: 0.08, rootMargin: '0px 0px -6% 0px'});
+    document.querySelectorAll('section').forEach(s => io.observe(s));
+  } else {
+    document.querySelectorAll('section').forEach(s => s.classList.add('in-view'));
+  }
+}
+
+/* Debounce */
+function debounce(fn, t=160){ let timer; return (...a)=>{ clearTimeout(timer); timer=setTimeout(()=>fn(...a), t); }; }
+
+/* Initialize */
+loadJSON();
