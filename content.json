@@ -1,0 +1,30 @@
+{
+  "nav": [
+    {
+      "text": "Home",
+      "href": "#home"
+    },
+    {
+      "text": "Projects",
+      "href": "#projects"
+    },
+    {
+      "text": "Contact",
+      "href": "#contact"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Welcome",
+      "text": "This is my professional portfolio site."
+    },
+    {
+      "title": "Projects",
+      "text": "Details of my projects will go here."
+    },
+    {
+      "title": "Contact",
+      "text": "You can contact me via email@example.com."
+    }
+  ]
+}
