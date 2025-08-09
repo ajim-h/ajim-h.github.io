@@ -1,0 +1,191 @@
+/* styles.css
+   Mobile-first, minimalist design with CSS variables.
+   Edit palette, font, and spacing in :root below.
+   - To change colors: edit --primary-1, --accent-1, etc.
+   - To change font: update Google Fonts link in index.html and --font-stack.
+   - To change spacing: adjust --space-*
+*/
+
+/* -------------------------
+   Variables (tweak here)
+   ------------------------- */
+:root{
+  --font-stack: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-size-base: 16px;
+
+  --space-xs: 6px;
+  --space-sm: 12px;
+  --space-md: 20px;
+  --space-lg: 32px;
+  --max-width: 1100px;
+
+  /* Palette */
+  --primary-1: #33BF2B;   /* green */
+  --accent-1: #DB162F;    /* red */
+  --accent-2: #DBDFAC;    /* pale green */
+  --muted-1: #5F758E;     /* blue-gray */
+  --muted-2: #383961;     /* indigo */
+
+  --bg: #ffffff;
+  --text: #0b1220;
+  --muted-text: #334155;
+  --inverse-text: #ffffff;
+
+  --focus: #ffb703;
+  --shadow: 0 8px 28px rgba(2,6,23,0.06);
+
+  /* animations */
+  --ease-smooth: cubic-bezier(.2,.9,.2,1);
+  --anim-fast: 180ms;
+  --anim-med: 260ms;
+}
+
+/* -------------------------
+   Reset & base
+   ------------------------- */
+*{box-sizing:border-box}
+html,body{height:100%}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:var(--font-stack);
+  font-size:var(--font-size-base);
+  color:var(--text);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.45;
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  :root{ --anim-fast: 0ms; --anim-med: 0ms }
+  html{ scroll-behavior: auto; }
+}
+
+/* Focus & skip link */
+.skip-link{
+  position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;
+}
+.skip-link:focus{
+  left:1rem; top:1rem; width:auto; height:auto; padding:.5rem .8rem; background:#000; color:#fff; border-radius:4px; z-index:999;
+}
+:focus{outline:3px solid var(--focus); outline-offset:3px}
+
+/* -------------------------
+   Header & Nav
+   ------------------------- */
+.site-header{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter: blur(6px);
+  border-bottom:1px solid rgba(16,24,40,0.05);
+}
+.header-inner{
+  max-width:var(--max-width);margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px var(--space-md);gap:12px;
+}
+
+/* Brand */
+.brand{display:flex;align-items:center;gap:12px;min-height:44px}
+.brand .logo{width:44px;height:44px;border-radius:8px;background-size:cover;background-position:center}
+.brand .title{font-weight:700;letter-spacing:-0.01em}
+.brand .subtitle{font-size:.9rem;color:var(--muted-1)}
+
+/* Nav toggle (hamburger -> X animation) */
+.nav-toggle{background:transparent;border:0;padding:6px;border-radius:8px;display:inline-flex;align-items:center;cursor:pointer}
+.icon-burger{color:var(--muted-2);transition:transform var(--anim-fast) var(--ease-smooth)}
+.nav-toggle[aria-expanded="true"] .bar1{transform-origin:center; transform:translateY(5px) rotate(45deg);}
+.nav-toggle[aria-expanded="true"] .bar2{opacity:0; transform:scaleX(.1);}
+.nav-toggle[aria-expanded="true"] .bar3{transform-origin:center; transform:translateY(-5px) rotate(-45deg);}
+
+/* Nav */
+.site-nav{display:none}
+.site-nav .nav-list{display:flex;flex-direction:column;gap:8px;padding:12px}
+.site-nav a{
+  text-decoration:none;color:var(--muted-2);font-weight:600;padding:.5rem .6rem;border-radius:8px;position:relative;display:inline-block;
+}
+/* slide-in underline */
+.site-nav a::after{
+  content:"";position:absolute;left:6px;right:6px;bottom:6px;height:2px;background:var(--primary-1);transform:scaleX(0);transform-origin:left center;transition:transform var(--anim-fast) var(--ease-smooth);opacity:0.95;border-radius:2px;
+}
+.site-nav a:hover::after,.site-nav a:focus::after{transform:scaleX(1);opacity:1}
+.site-nav a:hover, .site-nav a:focus{color:var(--text)}
+
+/* Desktop layout for nav */
+@media(min-width:700px){
+  .site-nav{display:block}
+  .site-nav .nav-list{flex-direction:row;gap:10px;padding:0}
+  .nav-toggle{display:none}
+}
+
+/* -------------------------
+   Main content & sections
+   ------------------------- */
+.main-content{padding-top:78px;max-width:var(--max-width);margin:0 auto;padding-left:var(--space-md);padding-right:var(--space-md);padding-bottom:var(--space-lg)}
+.content-root{display:block}
+
+/* Section base */
+section{margin-top:var(--space-lg);padding:var(--space-md);border-radius:10px; background:transparent;opacity:0;transform:translateY(8px);transition:opacity var(--anim-med) var(--ease-smooth), transform var(--anim-med) var(--ease-smooth)}
+section.in-view{opacity:1;transform:none}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.section-title h2{margin:0;font-size:1.15rem;color:var(--muted-2)}
+.section-intro{color:var(--muted-1);margin-top:.5rem}
+
+/* Cards */
+.card{padding:var(--space-sm);border-radius:8px;border:1px solid rgba(16,24,40,0.04);background:#fff;margin-top:var(--space-sm);}
+.row{display:flex;gap:var(--space-md);align-items:flex-start;flex-wrap:wrap}
+.col{flex:1 1 220px}
+
+/* Projects grid */
+.projects-grid{display:grid;grid-template-columns:repeat(1,1fr);gap:var(--space-md);margin-top:var(--space-sm)}
+.project-item{padding:var(--space-sm);border-radius:8px;border:1px solid rgba(16,24,40,0.04);background:#fff;transition:transform var(--anim-fast) var(--ease-smooth), box-shadow var(--anim-fast) var(--ease-smooth)}
+.project-item:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.project-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:.8rem;padding:.18rem .5rem;border-radius:999px;background:var(--accent-2);color:var(--text)}
+
+/* Controls */
+.controls{display:flex;gap:12px;align-items:center;margin-top:8px}
+.controls input[type="search"]{padding:.6rem .8rem;border-radius:10px;border:1px solid rgba(16,24,40,.08);width:100%;min-width:160px;transition:box-shadow var(--anim-fast)}
+.controls input[type="search"]:focus{box-shadow:0 6px 18px rgba(51,71,142,.06);outline:none}
+
+/* Footer */
+.site-footer{border-top:1px solid rgba(16,24,40,0.05);margin-top:var(--space-lg);padding:var(--space-md)}
+.footer-inner{max-width:var(--max-width);margin:0 auto;display:flex;justify-content:space-between;gap:12px;align-items:center}
+
+/* Print controls button */
+.print-controls{position:fixed;right:12px;bottom:12px;background:#fff;border:1px solid rgba(16,24,40,0.06);padding:10px;border-radius:10px;box-shadow:var(--shadow);z-index:60;font-size:.9rem;display:flex;gap:8px;align-items:center}
+.btn-primary{background:var(--primary-1);border:0;color:var(--inverse-text);padding:.45rem .7rem;border-radius:8px;cursor:pointer;transition:transform var(--anim-fast) var(--ease-smooth), box-shadow var(--anim-fast)}
+.btn-primary:hover{transform:scale(1.03);box-shadow:0 8px 30px rgba(5,30,10,0.08)}
+.print-only-toggle{font-size:.85rem;color:var(--muted-1)}
+
+/* Toggle button used in collapsible interactions */
+.toggle-btn{background:transparent;border:1px solid rgba(16,24,40,0.06);padding:.35rem .6rem;border-radius:8px;cursor:pointer;font-weight:700;transition:background var(--anim-fast), color var(--anim-fast)}
+.toggle-btn[aria-expanded="true"]{background:var(--primary-1);color:var(--inverse-text);border-color:var(--primary-1)}
+
+/* Collapsible content smooth expand */
+.collapsible{overflow:visible}
+.collapsible .collapsible-content{overflow:hidden;max-height:0;opacity:0;transition:max-height var(--anim-med) var(--ease-smooth), opacity var(--anim-med) var(--ease-smooth);margin-top:8px;padding-top:6px;border-top:1px dashed rgba(16,24,40,0.03)}
+.collapsible .collapsible-content.is-open{opacity:1}
+
+/* Highlight matches in search with subtle animation */
+mark.match{background:linear-gradient(90deg, rgba(235,250,205,1), rgba(255,249,200,0.8));padding:.1rem .15rem;border-radius:3px;transition:transform var(--anim-fast);display:inline-block}
+
+/* Contact social links microinteraction */
+.contact-links a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:.35rem .6rem;border-radius:8px;transition:transform var(--anim-fast), box-shadow var(--anim-fast);border:1px solid rgba(16,24,40,0.03)}
+.contact-links a:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(56,57,97,0.06)}
+
+/* Responsive grid */
+@media(min-width:700px){
+  .projects-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:1000px){
+  .projects-grid{grid-template-columns:repeat(3,1fr)}
+}
+
+/* Print stylesheet */
+@media print{
+  .site-header, .site-footer, .nav-toggle, .site-nav, .print-controls, .skip-link{display:none !important}
+  body{color:#000;background:#fff}
+  section{page-break-inside:avoid;break-inside:avoid-column}
+  .collapsible .collapsible-content{max-height:none !important;opacity:1 !important}
+}
