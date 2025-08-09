@@ -1,21 +1,22 @@
 {
-  "_schema_comment": "Edit this file only to update site content. Keep valid JSON. 'site.navOrder' controls section order. Images should live in assets/ and paths are relative to repo root.",
+  "_schema": "Single JSON file driving all pages. Edit values here. Paths are relative to repo root.",
   "site": {
     "title": "Ajim — Chemical Engineering Student",
-    "subtitle": "Thermodynamics enthusiast · Researcher in biochemical engineering",
-    "tagline": "Modeling • Research • Travel",
-    "description": "Personal site of Ajim — chemical engineering student focused on thermodynamics, biochemical engineering, and research.",
+    "subtitle": "Thermodynamics • Biochemical Engineering • Sustainability",
+    "tagline": "Modeling · Research · Travel",
+    "description": "Personal site of Ajim — chemical engineering student interested in thermodynamics, biochemical engineering and sustainable processes.",
     "logo": "assets/logo.svg",
     "image": "assets/profile.svg",
-    "navOrder": ["home", "education", "research", "projects", "testscores", "travelling", "miscellaneous", "contact"],
+    "navOrder": ["home", "education", "research", "projects", "testscores", "hobbies", "contact"],
     "copyright": "© 2025 Ajim"
   },
   "sections": {
     "home": {
       "meta": { "title": "Home" },
-      "intro": "Hello — I am Ajim, a Chemical Engineering student with a passion for thermodynamics and biochemical engineering. I build models, conduct small-scale research, and travel to learn from industry practices. Edit this site by updating <code>content.json</code> in the repository.",
-      "image": "assets/profile.svg",
-      "imageAlt": "Profile photo"
+      "title": "Hello — I'm Ajim",
+      "intro": "I am a Chemical Engineering student focused on thermodynamics and biochemical innovation. I work on modeling, low-cost sensors for agriculture, and sustainability projects.",
+      "heroImage": "assets/profile.svg",
+      "heroAlt": "Profile photo"
     },
     "education": {
       "meta": { "title": "Education" },
@@ -23,14 +24,14 @@
         {
           "degree": "B.Sc. in Chemical Engineering",
           "institution": "University of Engineering",
-          "period": "2019 — Expected 2027",
-          "details": "Relevant coursework: Heat Transfer, Mass Transfer, Solution Thermodynamics, Multivariable Statistics."
+          "years": "2019 — Expected 2027",
+          "details": "Relevant coursework: Heat Transfer, Mass Transfer, Thermodynamics II, Biochemistry."
         },
         {
-          "degree": "Higher Secondary Certificate — Science",
+          "degree": "Higher Secondary Certificate (Science)",
           "institution": "City Higher Secondary School",
-          "period": "2016 — 2018",
-          "details": "Graduated with honors; focused on physics and chemistry."
+          "years": "2016 — 2018",
+          "details": "Graduated with distinction."
         }
       ]
     },
@@ -38,16 +39,16 @@
       "meta": { "title": "Research" },
       "items": [
         {
-          "title": "Modeling Thermodynamic Behavior of PEG–Water–BSA Systems",
-          "role": "Independent Project",
-          "period": "July 2025",
-          "summary": "Developed excess Gibbs energy models to predict aqueous two-phase separation behavior for PEG–water–BSA mixtures. Implemented regression and visualization in Python; validated against experimental literature."
+          "title": "Antibiotic Extraction from Wastewater",
+          "year": "2024",
+          "description": "Lab-scale study developing protocols to detect and remove trace antibiotic residues from municipal wastewater using adsorption and filtration tests. Analysis included HPLC quantification and removal efficiency comparisons.",
+          "link": ""
         },
         {
           "title": "Sustainability Assessment of Solvent Recovery",
-          "role": "Research Assistant",
-          "period": "2024 — 2025",
-          "summary": "Performed process simulation and lifecycle assessment to identify energy-saving measures in solvent recovery for a small-scale plant."
+          "year": "2024",
+          "description": "Process simulation study evaluating energy and lifecycle impacts of solvent recovery units and proposing energy-saving retrofits.",
+          "link": ""
         }
       ]
     },
@@ -55,62 +56,47 @@
       "meta": { "title": "Projects" },
       "items": [
         {
-          "title": "Thermodynamics Modeler",
-          "subtitle": "Excess Gibbs energy toolkit",
-          "description": "A Python workbook and visualization set for fitting activity coefficients and generating phase diagrams for binary and ternary aqueous systems. Includes parameter estimation and plotting utilities.",
-          "tags": ["thermodynamics", "python", "modeling"],
+          "title": "Low-Cost Tree Watering Sensor",
+          "subtitle": "Agricultural IoT for Bangladesh",
+          "description": "A low-cost sensor that estimates soil moisture and tree water needs; designed for easy deployment and battery efficiency. Prototype uses off-the-shelf sensors and a simple thresholding model for irrigation alerts.",
+          "tags": ["sensors", "agriculture", "IoT"],
           "image": "assets/project1.svg",
-          "imageAlt": "Phase diagram"
+          "link": ""
         },
         {
-          "title": "Unit Ops Visualizer",
-          "subtitle": "Shell & Tube diagram tools",
-          "description": "Static site with annotated SVGs and calculators to help students understand shell-and-tube heat exchanger design and common failure modes.",
-          "tags": ["heat-transfer", "education", "svg"],
+          "title": "Thermodynamics Modeler",
+          "subtitle": "Activity coefficient fitting",
+          "description": "Python notebooks and utilities to fit excess Gibbs energy models and visualize phase diagrams for polymer–water systems.",
+          "tags": ["python", "thermodynamics", "modeling"],
           "image": "assets/project2.svg",
-          "imageAlt": "Heat exchanger diagram"
-        },
-        {
-          "title": "Travel Notes — Southeast Asia",
-          "subtitle": "Industry observations and photos",
-          "description": "Documented technical notes from travels that captured local process industries, logistics, and environmental contexts—useful references for qualitative research.",
-          "tags": ["travel", "writing"],
-          "image": "assets/travel1.svg",
-          "imageAlt": "Travel snapshot"
+          "link": ""
         }
       ]
     },
     "testscores": {
       "meta": { "title": "Test scores" },
       "list": [
-        { "test": "IELTS (sample)", "score": "7.0 — sample/placeholder" },
-        { "test": "TOEFL iBT (sample)", "score": "95 — sample/placeholder" }
+        { "test": "IELTS (sample)", "score": "7.0", "year": "2025" },
+        { "test": "TOEFL (sample)", "score": "95", "year": "2025" }
       ]
     },
-    "travelling": {
-      "meta": { "title": "Travelling" },
-      "places": [
-        { "name": "Sundarbans, Bangladesh", "year": "2023", "notes": "Field observations on coastal ecosystems and local industries." },
-        { "name": "Chiang Mai, Thailand", "year": "2022", "notes": "Attended conference and visited labs." }
-      ]
-    },
-    "miscellaneous": {
-      "meta": { "title": "Miscellaneous" },
+    "hobbies": {
+      "meta": { "title": "Hobbies" },
       "items": [
-        "Fluent in English and Bengali.",
-        "Contributor to small open-source utilities.",
-        "Interested in pharmaceutical process design and biochemical engineering."
+        { "name": "Traveling", "description": "Documenting process industries and cultures across Southeast Asia.", "image": "assets/travel1.svg" },
+        { "name": "Photography", "description": "Urban and nature photography.", "image": "assets/project1.svg" },
+        { "name": "Reading", "description": "Science-fiction and technical literature.", "image": "assets/project2.svg" }
       ]
     },
     "contact": {
       "meta": { "title": "Contact" },
       "email": "ajim@example.com",
-      "socials": [
-        { "label": "GitHub", "url": "https://github.com/username" },
-        { "label": "LinkedIn", "url": "https://www.linkedin.com/in/username" }
+      "phone": "+880-XXXXXXXXXX",
+      "social": [
+        { "platform": "GitHub", "url": "https://github.com/yourusername" },
+        { "platform": "LinkedIn", "url": "https://www.linkedin.com/in/yourprofile" }
       ],
       "form": {
-        "_comment": "To enable the contact form, set enabled to true and put your Formspree action URL.",
         "enabled": false,
         "action": "https://formspree.io/f/your-id"
       }
