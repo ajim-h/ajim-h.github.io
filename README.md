@@ -1,1 +1,0 @@
-# ajim-h.github.io
