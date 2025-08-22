@@ -6,9 +6,10 @@ body {
     position: relative;
     height: 100vh;
     margin: 0;
+    scroll-behavior: smooth;
 }
 
-/* Dynamic Gradient Background with Cursor Flow */
+/* Static Gradient Background */
 body::before {
     content: '';
     position: fixed;
@@ -20,112 +21,49 @@ body::before {
     opacity: 0.1;
     z-index: -1;
     pointer-events: none;
-    transition: all 0.3s ease-out;
 }
 
 body:hover::before {
     opacity: 0.2;
 }
 
-body {
-    --cursorX: 50vw;
-    --cursorY: 50vh;
-}
-
-body {
-    background: radial-gradient(circle at var(--cursorX) var(--cursorY), rgba(145, 47, 86, 0.1) 0%, rgba(54, 31, 39, 0.05) 70%);
-}
-
-/* Cursor Trail Effect */
-.cursor-trail {
-    position: fixed;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    background: rgba(145, 47, 86, 0.3);
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    z-index: 9999;
-    mix-blend-mode: difference;
-    transition: transform 0.1s ease, opacity 0.3s ease;
-}
-
-body:hover .cursor-trail {
-    opacity: 0.6; /* Reduced for performance on smaller devices */
-}
-
-.particle {
-    position: fixed;
-    width: 4px;
-    height: 4px;
-    background: rgba(145, 47, 86, 0.4);
-    border-radius: 50%;
-    animation: float 20s infinite linear;
-    pointer-events: none;
-}
-
-@keyframes float {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(100vw, 100vh); }
-}
-
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="4" fill="rgba(145, 47, 86, 0.08)"/></svg>');
-    background-size: 15px 15px;
-    opacity: 0.04;
-    z-index: -3;
-    pointer-events: none;
-}
-
-.smooth-transition {
-    transition: all 0.3s ease-in-out;
-}
-
-.nav-link:hover {
-    color: #912f56;
-    transform: scale(1.05);
-}
-
+/* Scroll-Triggered Animations */
 section {
     scroll-margin-top: 80px;
     opacity: 0;
-    transform: translateY(20px);
-    animation: fadeIn 0.6s ease forwards;
+    transform: translateY(50px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-@keyframes fadeIn {
-    to { opacity: 1; transform: translateY(0); }
+section.in-view {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .thumbnail {
     border: 2px solid #912f56;
     border-radius: 8px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
     position: relative;
     overflow: hidden;
 }
 
-.thumbnail:hover {
+.thumbnail.in-view {
     transform: scale(1.05);
     box-shadow: 0 4px 15px rgba(145, 47, 86, 0.3);
 }
 
-.thumbnail:hover::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at var(--cursorX) var(--cursorY), rgba(145, 47, 86, 0.1) 0%, transparent 70%);
-    z-index: 1;
-    pointer-events: none;
+.profile-photo {
+    border-radius: 50%;
+    border: 4px solid #912f56;
+    object-fit: cover;
+    max-width: 200px;
+    max-height: 200px;
+    transition: transform 0.5s ease;
+}
+
+.profile-photo.in-view {
+    transform: scale(1.1);
 }
 
 .section-container {
@@ -136,29 +74,34 @@ section {
     -webkit-backdrop-filter: blur(8px);
     padding: 1.5rem;
     border: 1px solid rgba(145, 47, 86, 0.08);
+    transition: transform 0.6s ease, box-shadow 0.6s ease;
+}
+
+.section-container.in-view {
+    transform: translateY(-10px);
+    box-shadow: 0 6px 20px rgba(145, 47, 86, 0.2);
 }
 
 .nav-gradient {
     background: linear-gradient(to bottom, #361f27, #521945);
+    transition: background 0.5s ease;
 }
 
-.profile-photo {
-    border-radius: 50%;
-    border: 4px solid #912f56;
-    object-fit: cover;
-    max-width: 200px;
-    max-height: 200px;
-    transition: transform 0.3s ease;
-}
-
-.profile-photo:hover {
-    transform: scale(1.05) rotate(2deg);
+.nav-link:hover {
+    color: #912f56;
+    transform: scale(1.05);
+    transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .logo-container {
     width: 60px;
     height: 60px;
     margin-right: 1rem;
+    transition: transform 0.5s ease;
+}
+
+.logo-container.in-view {
+    transform: rotate(360deg) scale(1.1);
 }
 
 /* Device-Specific Styles */
@@ -204,10 +147,6 @@ section {
     .grid {
         grid-template-columns: 1fr !important;
     }
-    .cursor-trail {
-        width: 10px;
-        height: 10px;
-    }
 }
 
 /* Small Tablets (e.g., Android Tablets: 800px–1000px) */
@@ -229,10 +168,6 @@ section {
     }
     .grid {
         grid-template-columns: repeat(2, 1fr) !important;
-    }
-    .cursor-trail {
-        width: 12px;
-        height: 12px;
     }
 }
 
@@ -256,10 +191,6 @@ section {
     .grid {
         grid-template-columns: repeat(2, 1fr) !important;
     }
-    .cursor-trail {
-        width: 15px;
-        height: 15px;
-    }
 }
 
 /* Laptops (13"–15": 1280px–1440px) */
@@ -281,10 +212,6 @@ section {
     }
     .grid {
         grid-template-columns: repeat(3, 1fr) !important;
-    }
-    .cursor-trail {
-        width: 15px;
-        height: 15px;
     }
 }
 
@@ -308,10 +235,6 @@ section {
     .grid {
         grid-template-columns: repeat(4, 1fr) !important;
     }
-    .cursor-trail {
-        width: 20px;
-        height: 20px;
-    }
 }
 
 /* Contact Section Specific Styling */
@@ -324,5 +247,21 @@ section {
 }
 
 #contact a:hover {
-    color: #eaf2ef;
+    color: #000000;
 }
+
+/* JavaScript Integration for Scroll Detection */
+<script>
+    document.addEventListener('scroll', () => {
+        const sections = document.querySelectorAll('section, .thumbnail, .profile-photo, .section-container, .logo-container');
+        sections.forEach(element => {
+            const rect = element.getBoundingClientRect();
+            const inView = rect.top < window.innerHeight - 100 && rect.bottom > 100;
+            if (inView) {
+                element.classList.add('in-view');
+            } else {
+                element.classList.remove('in-view');
+            }
+        });
+    });
+</script>
