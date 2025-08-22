@@ -98,7 +98,7 @@ section.in-view {
     color: #e0e0e0;
     padding: 0.5rem 1rem;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 200;
     transition: color 0.3s ease-out, transform 0.3s ease-out;
 }
 
@@ -114,9 +114,6 @@ section.in-view {
     transition: transform 0.6s ease-out;
 }
 
-.logo-container.in-view {
-    transform: scale(1.1);
-}
 
 h1,{
     font-weight: 600;
