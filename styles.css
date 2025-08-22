@@ -51,7 +51,7 @@ section.in-view {
 }
 
 .thumbnail.in-view {
-    transform: scale(1.03);
+    transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(107, 61, 92, 0.2);
 }
 
