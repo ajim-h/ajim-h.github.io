@@ -1,0 +1,425 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajim Hossain - Chemical Engineering Student</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #0d090a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            overflow-x: hidden;
+        }
+        .smooth-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        .nav-link:hover {
+            color: #912f56;
+            transform: scale(1.05);
+        }
+        section {
+            scroll-margin-top: 80px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.6s ease forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .thumbnail {
+            border: 2px solid #912f56;
+            border-radius: 8px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .thumbnail:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(145, 47, 86, 0.3);
+        }
+        .section-container {
+            @apply bg-white rounded-lg shadow-lg p-6;
+        }
+        .nav-gradient {
+            background: linear-gradient(to bottom, #361f27, #521945);
+        }
+        .profile-photo {
+            border-radius: 50%;
+            border: 4px solid #912f56;
+            object-fit: cover;
+            max-width: 200px;
+            max-height: 200px;
+        }
+        .logo-container {
+            width: 60px;
+            height: 60px;
+            margin-right: 1rem;
+        }
+        /* Device-Specific Styles */
+        @media (hover: none) {
+            .thumbnail:hover,
+            .nav-link:hover {
+                transform: none;
+                box-shadow: none;
+            }
+        }
+        @media (max-width: 640px) { /* Phones (iPhone, Android) */
+            .nav-gradient .flex {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .nav-link {
+                display: none;
+            }
+            .menu-open .nav-link {
+                display: block;
+                margin: 0.5rem 0;
+            }
+            .hamburger {
+                display: block;
+                font-size: 1.5rem;
+                cursor: pointer;
+                margin-left: auto;
+            }
+            .section-container {
+                padding: 1rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            h3 {
+                font-size: 1.1rem;
+            }
+            .thumbnail {
+                height: 40px; /* Adjusted to maintain aspect ratio on small screens */
+            }
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        @media (min-width: 641px) and (max-width: 1024px) { /* Tablets (iPad) */
+            .hamburger {
+                display: none;
+            }
+            .section-container {
+                padding: 1.5rem;
+            }
+            h2 {
+                font-size: 2rem;
+            }
+            h3 {
+                font-size: 1.3rem;
+            }
+            .thumbnail {
+                height: 160px; /* Adjusted for tablet screens */
+            }
+            .grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+        @media (min-width: 1025px) { /* Laptops/Desktops */
+            .hamburger {
+                display: none;
+            }
+            .section-container {
+                padding: 2rem;
+            }
+            h2 {
+                font-size: 2.5rem;
+            }
+            h3 {
+                font-size: 1.5rem;
+            }
+            .thumbnail {
+                height: 160px; /* Restored to original h-40 (160px) */
+            }
+            .grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="nav-gradient text-white fixed top-0 w-full z-10 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center relative">
+            <div class="logo-container">
+                <img src="ajim-logo.jpg" alt="Ajim Hossain Logo" class="profile-photo w-full h-full">
+            </div>
+            <h1 class="text-xl font-bold">Ajim Hossain</h1>
+            <div class="space-x-4 ml-auto hidden md:flex">
+                <a href="#home" class="nav-link smooth-transition inline-block px-2 py-1">Home</a>
+                <a href="#education" class="nav-link smooth-transition inline-block px-2 py-1">Education</a>
+                <a href="#leadership" class="nav-link smooth-transition inline-block px-2 py-1">Leadership</a>
+                <a href="#research-projects" class="nav-link smooth-transition inline-block px-2 py-1">Research & Projects</a>
+                <a href="#awards" class="nav-link smooth-transition inline-block px-2 py-1">Awards</a>
+                <a href="#test-scores" class="nav-link smooth-transition inline-block px-2 py-1">Test Scores</a>
+                <a href="#more-about-me" class="nav-link smooth-transition inline-block px-2 py-1">More About Me</a>
+                <a href="#contact" class="nav-link smooth-transition inline-block px-2 py-1">Contact</a>
+            </div>
+            <div class="hamburger md:hidden text-white cursor-pointer" onclick="toggleMenu()">☰</div>
+        </div>
+        <div id="mobileMenu" class="md:hidden px-4 pb-4 hidden">
+            <a href="#home" class="nav-link block px-2 py-1">Home</a>
+            <a href="#education" class="nav-link block px-2 py-1">Education</a>
+            <a href="#leadership" class="nav-link block px-2 py-1">Leadership</a>
+            <a href="#research-projects" class="nav-link block px-2 py-1">Research & Projects</a>
+            <a href="#awards" class="nav-link block px-2 py-1">Awards</a>
+            <a href="#test-scores" class="nav-link block px-2 py-1">Test Scores</a>
+            <a href="#more-about-me" class="nav-link block px-2 py-1">More About Me</a>
+            <a href="#contact" class="nav-link block px-2 py-1">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center bg-[#eaf2ef] py-20">
+        <div class="text-center max-w-3xl mx-auto px-4 section-container">
+            <h2 class="text-4xl font-bold mb-4 text-[#521945] bg-gradient-to-r from-[#361f27] to-[#912f56] bg-clip-text text-transparent">Md. Ajim Hossain</h2>
+            <img src="ajim-photo-home.jpg" alt="Ajim Hossain" class="profile-photo mx-auto mb-6">
+            <p class="text-lg text-[#0d090a]">
+                I’m a Chemical Engineering student at BUET, passionate about advancing research in biosensors and sustainable chemical processes. With a strong foundation in leadership, data analysis, and process design, I aim to contribute to innovative solutions in chemical engineering.
+            </p>
+        </div>
+    </section>
+
+    <!-- Education Section -->
+    <section id="education" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 section-container">
+            <h2 class="text-3xl font-bold mb-8 text-[#912f56] bg-gradient-to-r from-[#361f27] to-[#912f56] bg-clip-text text-transparent">Education</h2>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Bachelor of Science in Chemical Engineering</h3>
+                    <p class="text-[#0d090a]">Bangladesh University of Engineering and Technology (BUET) | July 2022 - Present</p>
+                    <p class="text-[#0d090a]">CGPA: 3.83/4.00 (4 terms), Top 10% of the class</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Higher Secondary Certificate (HSC)</h3>
+                    <p class="text-[#0d090a]">Jonail Degree College (JDC) | July 2019 - February 2022</p>
+                    <p class="text-[#0d090a]">GPA: 5.00/5.00, 92.6% marks</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Secondary School Certificate (SSC)</h3>
+                    <p class="text-[#0d090a]">St. Louis High School | January 2014 - February 2019</p>
+                    <p class="text-[#0d090a]">GPA: 5.00/5.00, 90.2% marks</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Leadership Section -->
+    <section id="leadership" class="py-20 bg-[#eaf2ef]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 section-container">
+            <h2 class="text-3xl font-bold mb-8 text-[#912f56] bg-gradient-to-r from-[#361f27] to-[#912f56] bg-clip-text text-transparent">Leadership</h2>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Regional Chair, Southern Asia Regional Subcommittee, AIChE Executive Students Committee</h3>
+                    <p class="text-[#0d090a]">Current Role</p>
+                    <p class="text-[#0d090a]">Leading efforts to connect and revitalize 14 student chapters across Southern Asia, establishing communication channels, and organizing virtual regional meetings to foster engagement and collaboration.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Co-Chair, BUET AIChE Events Management Team</h3>
+                    <p class="text-[#0d090a]">Current Role</p>
+                    <p class="text-[#0d090a]">Directed the launch of new competitions, initiated an industrial tour program, and coordinated expert webinars, enhancing student engagement and professional development opportunities.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Regional Liaison, AIChE Southern Asia Region</h3>
+                    <p class="text-[#0d090a]">2024–2025</p>
+                    <p class="text-[#0d090a]">Revived communication with inactive chapters by contacting leaders, scheduling meetings, and creating WhatsApp groups, while co-organizing virtual regional meetings with diverse participation.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Volunteer Team Leader, Edu Fair 2025</h3>
+                    <p class="text-[#0d090a]">2025</p>
+                    <p class="text-[#0d090a]">Managed crowd control and logistics, leading a team to ensure smooth event operations.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Invigilator, EXCELista 2024 AutoCAD Competition</h3>
+                    <p class="text-[#0d090a]">2024</p>
+                    <p class="text-[#0d090a]">Oversaw the competition, ensuring fairness and smooth execution under pressure.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Competition Planner, Chemical day 2023</h3>
+                    <p class="text-[#0d090a]">2023</p>
+                    <p class="text-[#0d090a]">Assisted in planning student competitions, working efficiently under tight deadlines.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Research & Projects Section -->
+    <section id="research-projects" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 section-container">
+            <h2 class="text-3xl font-bold mb-8 text-[#912f56] bg-gradient-to-r from-[#361f27] to-[#912f56] bg-clip-text text-transparent">Research & Projects</h2>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Undergraduate Researcher, Points of Care Testing (POCT)</h3>
+                    <p class="text-[#0d090a]">April 2025 - Present</p>
+                    <p class="text-[#0d090a]">Developing a point-of-care biosensor for early cancer detection using CRISPR-Cas12a. Experienced with sophisticated instruments and analytical tools.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Applied Bioengineering Research Incubator (ABRI)</h3>
+                    <p class="text-[#0d090a]">February 2024 - Present</p>
+                    <p class="text-[#0d090a]">Collaborated with senior researchers on project design and execution. Gained hands-on experience in dry and wet labs, making independent decisions on project modeling.</p>
+                    <!-- Thumbnails for ABRI photos -->
+                    <div class="grid gap-4 mt-4">
+                        <img src="abri-1.jpg" alt="ABRI Research Thumbnail 1" class="thumbnail w-full h-40 object-cover">
+                        <img src="abri-2.jpg" alt="ABRI Research Thumbnail 2" class="thumbnail w-full h-40 object-cover">
+                        <img src="abri-3.jpg" alt="ABRI Research Thumbnail 3" class="thumbnail w-full h-40 object-cover">
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Analysis of a 100 MTPD LABSA Production Plant</h3>
+                    <p class="text-[#0d090a]">ChE 308: Chemical Process Analysis, BUET | 2025</p>
+                    <p class="text-[#0d090a]">
+                        Contributed to a comprehensive study evaluating the technical and economic feasibility of a 100 MTPD Linear Alkylbenzene Sulfonic Acid (LABSA) production plant. Key contributions included:
+                    </p>
+                    <ul class="list-disc list-inside text-[#0d090a]">
+                        <li>Authored the abstract, summarizing the project's scope and findings.</li>
+                        <li>Conducted economic analysis, estimating annual revenue of USD 66M, gross profit of USD 6.96M, and net profit of USD 5.05M.</li>
+                        <li>Assisted in hazard and risk identification, emphasizing safety considerations for industrial-scale production.</li>
+                    </ul>
+                    <p class="text-[#0d090a]">The project demonstrated the application of chemical engineering principles, including material and energy balances, to assess a financially promising industrial setup.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Awards Section -->
+    <section id="awards" class="py-20 bg-[#eaf2ef]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 section-container">
+            <h2 class="text-3xl font-bold mb-8 text-[#912f56] bg-gradient-to-r from-[#361f27] to-[#912f56] bg-clip-text text-transparent">Awards & Scholarships</h2>
+            <div class="space-y-4">
+                <p class="text-[#0d090a]"><strong>Dean’s List Award</strong> | 2023, 2024</p>
+                <p class="text-[#0d090a]">Recognized for maintaining a high CGPA for two consecutive academic years at BUET.</p>
+                <p class="text-[#0d090a]"><strong>Merit List Scholarship</strong> | 2 Years</p>
+                <p class="text-[#0d090a]">Awarded for academic excellence during undergraduate studies.</p>
+                <p class="text-[#0d090a]"><strong>Technical Scholarship</strong> | 4 Academic Terms</p>
+                <p class="text-[#0d090a]">Received for outstanding performance at BUET.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Test Scores Section -->
+    <section id="test-scores" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 section-container">
+            <h2 class="text-3xl font-bold mb-8 text-[#912f56] bg-gradient-to-r from-[#361f27] to-[#912f56] bg-clip-text text-transparent">Test Scores</h2>
+            <div class="space-y-4">
+                <p class="text-[#0d090a]">Bachelor of Science in Chemical Engineering: CGPA 3.83/4.00</p>
+                <p class="text-[#0d090a]">Higher Secondary Certificate (HSC): GPA 5.00/5.00, 92.6% marks</p>
+                <p class="text-[#0d090a]">Secondary School Certificate (SSC): GPA 5.00/5.00, 90.2% marks</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- More About Me Section -->
+    <section id="more-about-me" class="py-20 bg-[#eaf2ef]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 section-container">
+            <h2 class="text-3xl font-bold mb-8 text-[#912f56] bg-gradient-to-r from-[#361f27] to-[#912f56] bg-clip-text text-transparent">More About Me</h2>
+            <div class="space-y-6">
+                <img src="ajim-photo-more.jpg" alt="Ajim Hossain" class="profile-photo mx-auto mb-6">
+                <div>
+                    <p class="text-[#0d090a]"><strong>Languages:</strong> Bengali, English, Hindi</p>
+                    <p class="text-[#0d090a]"><strong>Volunteering:</strong> Organized Chemical Day (2023, 2023-24, 2024), International Conference in Chemical Engineering (BUET ICChE-2023), US Edu-fair, and Environment Day.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#361f27]">Traveling</h3>
+                    <p class="text-[#0d090a]">I enjoy exploring new cultures and landscapes, which inspires my problem-solving approach in engineering.</p>
+                    <!-- Thumbnails for traveling photos -->
+                    <div class="grid gap-4 mt-4">
+                        <img src="travel-1.jpg" alt="Travel Thumbnail 1" class="thumbnail w-full h-40 object-cover">
+                        <img src="travel-2.jpg" alt="Travel Thumbnail 2" class="thumbnail w-full h-40 object-cover">
+                        <img src="travel-3.jpg" alt="Travel Thumbnail 3" class="thumbnail w-full h-40 object-cover">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-[#361f27] text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 section-container">
+            <h2 class="text-3xl font-bold mb-8 bg-gradient-to-r from-[#361f27] to-[#912f56] bg-clip-text text-transparent">Contact</h2>
+            <div class="space-y-4">
+                <p><strong>Email:</strong> <a href="mailto:ajim.che.buet@gmail.com" class="underline hover:text-[#eaf2ef] smooth-transition">ajim.che.buet@gmail.com</a>, <a href="mailto:2102002@che.buet.ac.bd" class="underline hover:text-[#eaf2ef] smooth-transition">2102002@che.buet.ac.bd</a></p>
+                <p><strong>Social Media:</strong></p>
+                <div class="flex space-x-4">
+                    <a href="https://facebook.com/cap.ajim" class="hover:text-[#eaf2ef] smooth-transition">Facebook</a>
+                    <a href="https://instagram.com/cap.aj.jr" class="hover:text-[#eaf2ef] smooth-transition">Instagram</a>
+                    <a href="https://linkedin.com/in/ajim2102002" class="hover:text-[#eaf2ef] smooth-transition">LinkedIn</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                if (window.innerWidth <= 640) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Hamburger menu toggle
+        function toggleMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('menu-open');
+        }
+
+        // Add fade-in animation with scroll
+        document.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top < window.innerHeight - 100) {
+                    section.style.animationPlayState = 'running';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
