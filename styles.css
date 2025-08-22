@@ -149,11 +149,11 @@ section {
 
 /* Contact Section Specific Styling */
 #contact {
-    color: #525b76; /* Changed to a lighter gray for better visibility */
+    color: #000000; /* Changed to a lighter gray for better visibility */
 }
 
 #contact a {
-    color: #525b76;
+    color: #000000;
 }
 
 #contact a:hover {
