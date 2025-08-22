@@ -289,5 +289,20 @@
             });
         });
     </script>
+        <script>
+    document.addEventListener('mousemove', (e) => {
+        document.body.style.setProperty('--cursorX', `${e.clientX}px`);
+        document.body.style.setProperty('--cursorY', `${e.clientY}px`);
+        const trail = document.querySelector('.cursor-trail');
+        if (trail) {
+            trail.style.left = `${e.clientX}px`;
+            trail.style.top = `${e.clientY}px`;
+        } else {
+            const newTrail = document.createElement('div');
+            newTrail.className = 'cursor-trail';
+            document.body.appendChild(newTrail);
+        }
+    });
+</script>
 </body>
 </html>
