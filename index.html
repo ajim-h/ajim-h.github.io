@@ -289,19 +289,18 @@
             });
         });
     </script>
-        <script>
-    document.addEventListener('mousemove', (e) => {
-        document.body.style.setProperty('--cursorX', `${e.clientX}px`);
-        document.body.style.setProperty('--cursorY', `${e.clientY}px`);
-        const trail = document.querySelector('.cursor-trail');
-        if (trail) {
-            trail.style.left = `${e.clientX}px`;
-            trail.style.top = `${e.clientY}px`;
-        } else {
-            const newTrail = document.createElement('div');
-            newTrail.className = 'cursor-trail';
-            document.body.appendChild(newTrail);
-        }
+   <script>
+    document.addEventListener('scroll', () => {
+        const sections = document.querySelectorAll('section, .thumbnail, .profile-photo, .section-container, .logo-container');
+        sections.forEach(element => {
+            const rect = element.getBoundingClientRect();
+            const inView = rect.top < window.innerHeight - 100 && rect.bottom > 100;
+            if (inView) {
+                element.classList.add('in-view');
+            } else {
+                element.classList.remove('in-view');
+            }
+        });
     });
 </script>
 </body>
