@@ -272,3 +272,38 @@ ul li {
     animation: none !important;
   }
 }
+
+/* Mobile Drawer Nav */
+.mobile-nav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 70%; /* adjust for wider/narrower drawer */
+  max-width: 300px;
+  background: var(--surface);
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+  transform: translateX(100%); /* start hidden off-screen */
+  transition: transform var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  padding: 4rem 2rem;
+  z-index: 2000;
+}
+
+.mobile-nav.open {
+  transform: translateX(0); /* slides in smoothly */
+}
+
+.mobile-nav a {
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.mobile-nav a:hover {
+  color: var(--primary);
+}
+
