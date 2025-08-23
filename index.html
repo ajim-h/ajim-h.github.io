@@ -330,5 +330,20 @@
 
     document.querySelectorAll('section, .card, .thumbnail, .profile-photo').forEach(el => observer.observe(el));
 </script>
+        <script>
+  const hamburger = document.getElementById('hamburger');
+  const mobileNav = document.getElementById('mobileNav');
+
+  hamburger.addEventListener('click', () => {
+    mobileNav.classList.toggle('open');
+  });
+
+  document.querySelectorAll('.mobile-nav a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileNav.classList.remove('open');
+    });
+  });
+</script>
+
 </body>
 </html>
