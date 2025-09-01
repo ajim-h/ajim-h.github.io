@@ -100,7 +100,12 @@ a { color: inherit; }
 
 .brand { display: inline-flex; align-items: center; gap: .75rem; text-decoration: none; }
 .brand__logo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-.brand__name { font-weight: 600; letter-spacing: .2px; }
+.brand__name {
+  font-weight: 600;
+  letter-spacing: .2px;
+  color: #ffffff; /* white, good for dark header */
+}
+
 
 .primary-nav { position: relative; }
 .nav-toggle {
@@ -191,10 +196,10 @@ a { color: inherit; }
 }
 
 /* Inverse section (Contact) */
-.section--inverse {
-  background: var(--inverse-bg);
-  color: var(--inverse-text);
+.section--inverse .h2 {
+  color: #ffffff;
 }
+
 .section--inverse .card { background: transparent; border-color: rgba(255,255,255,.12); }
 .section--inverse a { color: #f3e8ff; text-decoration: underline; text-underline-offset: 2px; }
 .section--inverse a:hover { color: #e9d5ff; }
