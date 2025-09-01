@@ -209,14 +209,13 @@ a { color: #ffffff; text-decoration: underline; text-underline-offset: 2px; }
 a:hover { color: var(--accent-600); }
 
 /* Footer */
-.site-footer {             /* optional: remove top border */
-  background: #7F557E;             /* your chosen color */
+.site-footer {
+  background: #7F557E;
   padding-block: var(--space-3);
-  color: #ffffff;                  /* white text for contrast */
+  color: #ffffff;
   font-size: .95rem;
-  text-align: center;              /* optional: center text */
+  text-align: center;
 }
-
 
 /* Helpers */
 .visually-hidden {
@@ -227,3 +226,80 @@ a:hover { color: var(--accent-600); }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ==========================================================================
+   Additional Animations and Transitions
+   ========================================================================== */
+
+/* Fade-in animation for section headers */
+.section__header {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.section__header.in-view {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Staggered fade-in for cards */
+.card {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.card.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+.cards .card:nth-child(1) { transition-delay: 0.1s; }
+.cards .card:nth-child(2) { transition-delay: 0.2s; }
+.cards .card:nth-child(3) { transition-delay: 0.3s; }
+.research-grid .card:nth-child(1) { transition-delay: 0.1s; }
+.research-grid .card:nth-child(2) { transition-delay: 0.2s; }
+.research-grid .research-span { transition-delay: 0.3s; }
+
+/* Hover scale effect for brand logo */
+.brand__logo {
+  transition: transform 0.3s ease;
+}
+.brand__logo:hover {
+  transform: scale(1.1);
+}
+
+/* Smooth nav-list open/close animation */
+.nav-list {
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.nav-list.is-open {
+  transform: scaleY(1);
+  opacity: 1;
+}
+
+/* Fade-in for footer */
+.site-footer {
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+}
+.site-footer.in-view {
+  opacity: 1;
+}
+
+/* Staggered list item animations for bullet lists */
+.bullet-list li {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+.bullet-list li.in-view {
+  opacity: 1;
+  transform: translateX(0);
+}
+.bullet-list li:nth-child(1) { transition-delay: 0.1s; }
+.bullet-list li:nth-child(2) { transition-delay: 0.2s; }
+.bullet-list li:nth-child(3) { transition-delay: 0.3s; }
+.bullet-list li:nth-child(4) { transition-delay: 0.4s; }
+.bullet-list li:nth-child(5) { transition-delay: 0.5s; }
+.bullet-list li:nth-child(6) { transition-delay: 0.6s; }
