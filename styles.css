@@ -197,7 +197,7 @@ a { color: inherit; }
 
 /* Inverse section (Contact) */
 .section--inverse .h2 {
-  color: #ffffff;
+  color: #8f616d;
 }
 
 .section--inverse .card { background: transparent; border-color: rgba(255,255,255,.12); }
@@ -205,17 +205,18 @@ a { color: inherit; }
 .section--inverse a:hover { color: #e9d5ff; }
 
 /* Links (default) */
-a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+a { color: #ffffff; text-decoration: underline; text-underline-offset: 2px; }
 a:hover { color: var(--accent-600); }
 
 /* Footer */
-.site-footer {
-  border-top: 1px solid var(--border);
-  background: var(--surface-elev);
+.site-footer {             /* optional: remove top border */
+  background: #7F557E;             /* your chosen color */
   padding-block: var(--space-3);
-  color: var(--muted);
+  color: #ffffff;                  /* white text for contrast */
   font-size: .95rem;
+  text-align: center;              /* optional: center text */
 }
+
 
 /* Helpers */
 .visually-hidden {
