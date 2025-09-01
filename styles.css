@@ -197,11 +197,11 @@ a { color: inherit; }
 
 /* Inverse section (Contact) */
 .section--inverse .h2 {
-  color: #8f616d;
+  color: #000000;
 }
 
 .section--inverse .card { background: transparent; border-color: rgba(255,255,255,.12); }
-.section--inverse a { color: #f3e8ff; text-decoration: underline; text-underline-offset: 2px; }
+.section--inverse a { color: #48454C; text-decoration: underline; text-underline-offset: 2px; }
 .section--inverse a:hover { color: #e9d5ff; }
 
 /* Links (default) */
