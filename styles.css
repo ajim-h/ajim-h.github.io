@@ -303,3 +303,93 @@ a:hover { color: var(--accent-600); }
 .bullet-list li:nth-child(4) { transition-delay: 0.4s; }
 .bullet-list li:nth-child(5) { transition-delay: 0.5s; }
 .bullet-list li:nth-child(6) { transition-delay: 0.6s; }
+
+/* Fade in sections on scroll */
+.section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.section.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Smooth scale-up on hero profile photo */
+.profile-photo {
+  transition: transform 0.6s ease;
+}
+.profile-photo:hover, .profile-photo.in-view {
+  transform: scale(1.05);
+}
+
+/* Navigation link hover scale and color */
+.nav-link {
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+.nav-link:hover, .nav-link:focus-visible {
+  color: var(--accent-600);
+  transform: translateY(-3px);
+}
+
+/* Brand logo subtle scale on hover (already present, reinforce if needed) */
+.brand__logo {
+  transition: transform 0.3s ease;
+}
+.brand__logo:hover {
+  transform: scale(1.1);
+}
+
+/* Smooth dropdown nav open animation */
+.nav-list {
+  transform-origin: top center;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+.nav-list.is-open {
+  transform: scaleY(1);
+  opacity: 1;
+}
+.nav-list:not(.is-open) {
+  transform: scaleY(0);
+  opacity: 0;
+}
+
+/* Staggered fade-in and slide-up for cards */
+.card {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+.card.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+.cards .card:nth-child(1) { transition-delay: 0.1s; }
+.cards .card:nth-child(2) { transition-delay: 0.2s; }
+.cards .card:nth-child(3) { transition-delay: 0.3s; }
+
+/* Footer fade in */
+.site-footer {
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+.site-footer.in-view {
+  opacity: 1;
+}
+
+/* List item fade and slide from left, staggered */
+.bullet-list li {
+  opacity: 0;
+  transform: translateX(-15px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+.bullet-list li.in-view {
+  opacity: 1;
+  transform: translateX(0);
+}
+.bullet-list li:nth-child(1) { transition-delay: 0.1s; }
+.bullet-list li:nth-child(2) { transition-delay: 0.2s; }
+.bullet-list li:nth-child(3) { transition-delay: 0.3s; }
+.bullet-list li:nth-child(4) { transition-delay: 0.4s; }
+
