@@ -1,65 +1,36 @@
-// animations.js — cinematic hero, sequential cards, and natural fade-out motion
+// animations.js — Smooth, cinematic animations for Ajim Hossain portfolio
 document.addEventListener("DOMContentLoaded", () => {
   const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // Accessibility: instant reveal if reduced motion is preferred
+  // Show instantly if motion disabled
   if (prefersReduced) {
     document.querySelectorAll(".reveal, .section, .card, .bullet-list li, .site-footer, .section__header, .profile-photo, .hero__body")
       .forEach(el => el.classList.add("in-view"));
     return;
   }
 
-  // Sequential card animation (in or out)
-  const animateCardsSequentially = (cards, direction = "in", baseDelay = 150) => {
-    cards.forEach((card, i) => {
-      const delay = baseDelay * i;
-      setTimeout(() => {
-        if (direction === "in") {
-          card.classList.add("in-view");
-          card.style.opacity = "1";
-          card.style.transform = "translateY(0) scale(1)";
-        } else {
-          card.classList.remove("in-view");
-          card.style.opacity = "0";
-          card.style.transform = "translateY(25px) scale(0.97)"; // slide slightly down for natural exit
-        }
-        card.style.transition = "transform 0.6s cubic-bezier(0.19,1,0.22,1), opacity 0.6s ease-out";
-      }, delay);
+  // Helper: staggered reveal for multiple children
+  const applyStagger = (elements, baseDelay = 0.1, maxDelay = 0.6) => {
+    elements.forEach((el, i) => {
+      const delay = Math.min(baseDelay * (i + 1), maxDelay);
+      el.style.transitionDelay = `${delay}s`;
+      el.classList.add("in-view");
+      el.style.opacity = "1";
+      el.style.transform = "translateY(0) scale(1)";
     });
   };
 
-  // Sequential bullet list animation
-  const animateListSequentially = (items, direction = "in", baseDelay = 100) => {
-    items.forEach((item, i) => {
-      const delay = baseDelay * (i + 1);
-      setTimeout(() => {
-        if (direction === "in") {
-          item.classList.add("in-view");
-          item.style.opacity = "1";
-          item.style.transform = "translateX(0)";
-        } else {
-          item.classList.remove("in-view");
-          item.style.opacity = "0";
-          item.style.transform = "translateX(-10px)";
-        }
-        item.style.transition = "transform 0.5s ease-out, opacity 0.5s ease-out";
-      }, delay);
-    });
-  };
-
-  // Intersection Observer for entry and exit animations
-  const observer = new IntersectionObserver((entries) => {
+  // Intersection observer setup
+  const observer = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => {
-      const el = entry.target;
-
       if (entry.isIntersecting) {
-        // ✅ ENTERING VIEW
+        const el = entry.target;
         el.classList.add("in-view");
         el.style.opacity = "1";
         el.style.transform = "translateY(0) scale(1)";
         el.style.transition = "transform 0.7s cubic-bezier(0.19,1,0.22,1), opacity 0.6s ease-out";
 
-        // 🎬 Hero animation
+        // Hero photo first, text after slight delay
         if (el.classList.contains("hero__media")) {
           const photo = el.querySelector(".profile-photo");
           const body = document.querySelector(".hero__body");
@@ -85,41 +56,26 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        // 🃏 Card-by-card animation
+        // Cards fade + scale in with stagger
         if (el.classList.contains("cards")) {
-          const cards = el.querySelectorAll(".card");
-          animateCardsSequentially(cards, "in", 180);
+          applyStagger(el.querySelectorAll(".card"));
         }
 
-        // 📋 Bullet list animation
+        // Bullet lists stagger in from left
         if (el.classList.contains("bullet-list")) {
-          const listItems = el.querySelectorAll("li");
-          animateListSequentially(listItems, "in", 100);
+          applyStagger(el.querySelectorAll("li"));
         }
 
-      } else {
-        // 🚪 LEAVING VIEW — fade out naturally
-        if (el.classList.contains("cards")) {
-          const cards = el.querySelectorAll(".card");
-          // reverse order for graceful exit
-          animateCardsSequentially(Array.from(cards).reverse(), "out", 100);
-        } else if (el.classList.contains("bullet-list")) {
-          const listItems = el.querySelectorAll("li");
-          animateListSequentially(Array.from(listItems).reverse(), "out", 80);
-        } else if (el.classList.contains("section") || el.classList.contains("site-footer")) {
-          el.classList.remove("in-view");
-          el.style.opacity = "0";
-          el.style.transform = "translateY(25px) scale(0.98)"; // fade + slide down exit
-        }
+        obs.unobserve(el);
       }
     });
   }, {
-    threshold: 0.25,
+    threshold: 0.15,
     rootMargin: "0px 0px -10% 0px"
   });
 
-  // Initialize elements before observation
-  document.querySelectorAll(".reveal, .section, .cards, .card, .bullet-list, .site-footer, .section__header, .hero__media")
+  // Apply initial hidden state before observing
+  document.querySelectorAll(".reveal, .section, .card, .bullet-list, .site-footer, .section__header, .hero__media")
     .forEach(el => {
       el.style.opacity = "0";
       el.style.transform = "translateY(20px) scale(0.98)";
